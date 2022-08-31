@@ -1,23 +1,48 @@
 const canvas = document.getElementById("c");
 const ctx = canvas.getContext("2d");
 
-ctx.strokeStyle = 'blue'
-ctx.strokeRect(50, 50, 60, 80);
+const tankSprite = new Image();
+tankSprite.src = "img/tank.png";
 
-ctx.fillStyle = 'red'
-ctx.fillRect(80, 100, 20, 20);
+class Tank {
+    constructor() {
+        this.x = 100;
+        this.y = 100;
+        this.speed = 2;
+    }
+}
 
-ctx.clearRect(90, 110, 10, 10);
-// const tankSprite = new Image();
-// tankSprite.src = "img/tank.png"
+const tank = new Tank();
 
-// tankSprite.addEventListener("load", function () {
-//     ctx.drawImage(
-//         tankSprite,
-//         100,
-//         100,
-//         15,
-//         15
-//     );
-// });
+function keydownHandler(e) {
+    switch (e.code) {
+        case "KeyW":
+            tank.y -= tank.speed;
+            break;
+        case "KeyA":
+            tank.x -= tank.speed;
+            break;
+        case "KeyS":
+            tank.y += tank.speed;
+            break;
+        case "KeyD":
+            tank.x += tank.speed;
+            break;
+    }
+}
 
+document.addEventListener("keydown", keydownHandler, false);
+
+function gameLoop() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(
+        tankSprite,
+        tank.x,
+        tank.y,
+        15,
+        15
+    );
+    requestAnimationFrame(() => gameLoop());
+}
+
+gameLoop();
