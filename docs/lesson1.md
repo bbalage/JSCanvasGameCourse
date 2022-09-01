@@ -240,10 +240,105 @@ function gameLoop() {
 gameLoop();
 ```
 
-However, if you try this, you notice that the execution stucks. The script never finishes, the webpages never launches. You cannot write an infinite loop like this. Instead, you can call `requestAnimationFrame`. ...
+However, if you try this, you notice that the execution gets stuck. The script never finishes, the webpage never launches. You cannot write an infinite loop like this in Javascript, because the script is run, when you load the page and just keeps running.
+
+What you *can* do, is you can call `requestAnimationFrame`. By doing so, you request the browser to create an animation by calling a function multiple times over and over. It depends on browser refresh rate how many times the function gets called. 60 is a reasonable number (this has to do with FPS: Frames Per Seconds, where 30 FPS is considered real time, and above that you can do slow monition playbacks). If you want the animation function get called over and over again forever, then you need to call `requestAnimationFrame` from within the function, and supply the function itself.
+
+So, `gameLoop()` is the function we want to call at least 30 times per second, and we should keep calling it forever (until we close the page at least). It is, in a way, our infinite loop. In the function, there is a drawing call. Then, finally, we have the last scary line:
+
+`requestAnimationFrame(() => gameLoop());`
+
+Remember, we need to supply `requestAnimationFrame` a function as its argument. In Javascript, `() => console.log("Hi");` is a lambda function, which is a short for `function () {console.log("Hi");}`. It is a nameless function, created just now. The nameless function calls `gameLoop()` and that's it. Why not write `requestAnimationFrame(gameLoop);`? You can write that too, it still works the same. The reason I wrote a lambda function is that (1) it, if you've seen lambda functions before, makes the intent even clearer than simply writing a function name, and, more importantly, (2) in Javascript, the meaning of `this` is not the same in the two cases if gameLoop is a class method.
+
+If you feel like you can take more of Javascript, then read the next code snippet. It doesn't work. `this` is undefined in the context. However, it works fine with `requestAnimationFrame(() => this.gameLoop())`. Javascript things.
+```javascript
+class Game {
+    constructor() {
+        this.frame = 0;
+    }
+
+    gameLoop() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(
+            tankSprite,
+            tank.x,
+            tank.y,
+            15,
+            15
+        );
+        this.frame++;
+        console.log(this.frame);
+        requestAnimationFrame(this.gameLoop);
+    }
+}
+
+const game = new Game();
+game.gameLoop();
+```
+
+All that said, the `index.js` file should look like this:
+
+```javascript
+const canvas = document.getElementById("c");
+const ctx = canvas.getContext("2d");
+
+const tankSprite = new Image();
+tankSprite.src = "img/tank.png";
+
+class Tank {
+    constructor() {
+        this.x = 100;
+        this.y = 100;
+        this.speed = 2;
+    }
+}
+
+const tank = new Tank();
+
+function keydownHandler(e) {
+    switch (e.code) {
+        case "KeyW":
+            tank.y -= tank.speed;
+            break;
+        case "KeyA":
+            tank.x -= tank.speed;
+            break;
+        case "KeyS":
+            tank.y += tank.speed;
+            break;
+        case "KeyD":
+            tank.x += tank.speed;
+            break;
+    }
+}
+
+document.addEventListener("keydown", keydownHandler, false);
+
+function gameLoop() {
+    ctx.drawImage(
+        tankSprite,
+        tank.x,
+        tank.y,
+        15,
+        15
+    );
+    requestAnimationFrame(() => gameLoop());
+}
+
+gameLoop();
+```
+
+Watch what happens!
+
+![game screenshot](img/game_screenshot3.png)
+
+I intentionally left something out. The only gets draw, but never gets deleted from its previous position. So:
+
+### **Task:**
+Make the previous tank disappear (you can use external sources, but you can find the solution on this very page too)!
 
 ## Publish the project
-Finally, let's make this project available on Github!
+We have written what we set out to write: the tank moves by WASD. It doesn't turn properly, but we will get to that later. Now, it is time to make this project available on Github!
 
 You are probably already be able to create a Github repository and push an existing project to it. If not, refer to [external sources](https://www.datacamp.com/tutorial/git-push-pull).
 
@@ -251,13 +346,14 @@ First, create **public** a Github repository, and push everything in the project
 When you are done, your directory structure should look somewhat like this:
 
 ```
+project
 |
-|-img
-  |-tank.png
-|-js
-  |-index.js
-|-index.css
-|-index.html
+|—–img
+|  |––tank.png
+|––js
+|  |——index.js
+|——index.css
+|——index.html
 ```
 
 To make this game playable anyone on the web, we will use [Github Pages](https://docs.github.com/en/pages/quickstart). Github Pages are public webpages shared through Github repositories. Its primary use is for documentation. However, since the hosted pages are HTML5 pages, they have everything we need to make our canvas game available.
@@ -266,4 +362,16 @@ To make this game playable anyone on the web, we will use [Github Pages](https:/
 
 To publish your repository, click Settings > Pages. You need to set a branch to be tracked by Github Pages (*master* branch is probably the best choice) and a directory. For the directory, choose *root*. Save your settings.
 
-After a few seconds, Github Pages should be built. You can access your game on https://username.github.io/RepoName which will direct you to the index.html file you published in the root of the repo.
+After a few seconds (or a minute :sob: :sob), Github Pages should be built. You can access your game on https://username.github.io/RepoName which will direct you to the index.html file you published in the root of the repo.
+
+## Extra tasks:
+Now, add a functionality of your own! A little research might be needed. If you know instantly how to do these small tasks, please, skip to the next lesson. If not sure, do your research, and complete them!
+
+### **Task 1:** (easy)
+Make two tanks, instead of one! Control the other tank with arrows!
+
+### **Task 2:** (medium)
+Make the tank turn! Only 90° turns are allowed. If you start heading in another direction, the tank image should be updated instantly (no turning animation is needed). You can do this task two simple ways: rotating through `ctx` (do your google research) or creating a different tank.png for each of the four directions. Both are good!
+
+### **Task 3:** (a little hard)
+Make the tank(s) shoot! No collision detection is needed, no hitboxes are necessary. Just draw circles or some kind of rocket image, and let them fly! Don't forget to destroy them if they go out of the screen!

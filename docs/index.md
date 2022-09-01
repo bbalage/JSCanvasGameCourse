@@ -3,4 +3,4 @@
 This repository contains an example of a canvas game and a step by step tutorial to create it.
 
 ## Lessons
-- [Lesson 1](/JSCanvasGameCourse/docs/lesson1.md)
+- [Lesson 1](/JSCanvasGameCourse/docs/lesson1)
