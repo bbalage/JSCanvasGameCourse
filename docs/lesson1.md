@@ -362,7 +362,7 @@ To make this game playable anyone on the web, we will use [Github Pages](https:/
 
 To publish your repository, click Settings > Pages. You need to set a branch to be tracked by Github Pages (*master* branch is probably the best choice) and a directory. For the directory, choose *root*. Save your settings.
 
-After a few seconds (or a minute :sob: :sob), Github Pages should be built. You can access your game on https://username.github.io/RepoName which will direct you to the index.html file you published in the root of the repo.
+After a few seconds (or a minute), Github Pages should be built. You can access your game on https://username.github.io/RepoName which will direct you to the index.html file you published in the root of the repo.
 
 ## Extra tasks:
 Now, add a functionality of your own! A little research might be needed. If you know instantly how to do these small tasks, please, skip to the next lesson. If not sure, do your research, and complete them!
