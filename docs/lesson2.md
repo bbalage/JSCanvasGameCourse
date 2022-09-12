@@ -123,6 +123,135 @@ And we need to import new files in the `index.html`:
 
 Now, we have our skeleton. Let's add the meat!
 
-## Importing the previous lesson
-Before we advance to make our tank rotate, let's just make everything work again! We are going to make a few structural changes along the line, but the functionalities will stay the same.
+## Tank
+First, let's create a tank that rotates. We will put the code of the tank into a `tank.js` file. Create and import the file:
 
+```html
+<body>
+    <canvas id="c"></canvas>
+    <script src="js/tank.js"></script> <!--Hello there...-->
+    <script src="js/scene.js"></script>
+    <script src="js/game.js"></script>
+    <script src="js/index.js"></script>
+</body>
+```
+
+We create the Tank class. We aim for generality (so we don't have to change the Tank class, when we add enemy tanks), so we insert all necessary data in the constructor. I will skip ahead to the part, where I already know what this data is exactly. The class with the constructor looks like the following:
+
+```javascript
+class Tank {
+    constructor(x, y, w, h, rotation, speed, rotationSpeed, spriteName) {
+        this.x = x;
+        this.y = y;
+        this.w = w;
+        this.h = h;
+        this.rotation = rotation;
+        this.speed = speed;
+        this.rotationSpeed = rotationSpeed;
+        this.spriteName = spriteName;
+    }
+
+    // Rest of the class goes here
+}
+```
+
+Obviously, this just sets everything up. Functions come later. Some of the constructor arguments are fairly straight-forward:
+- x, y: the initial position of the tank.
+- w, h: width and height of the tank.
+- rotation: rotation in degrees.
+- speed: how far does one step change the tank's position.
+- rotationSpeed: how many degrees does one turn movement rotate the tank.
+- spriteName: least obvious... we don't store the image with the tank, because multiple tanks could have the same image; this is why we store only the name of the image, and the image is elsewhere in associative table, accessible by name.
+
+There are two other things the tank needs to be able to do (currently): move and rotate. Both get a function inside the class. Paste the following:
+
+```javascript
+move(direction) {
+    const dir = direction <= 0 ? -1 : 1;
+    this.x += Math.sin(this.rotation * Math.PI / 180) * this.speed * dir;
+    this.y -= Math.cos(this.rotation * Math.PI / 180) * this.speed * dir;
+}
+
+rotate(direction) {
+    this.rotation += direction >= 0 ? this.rotationSpeed : -this.rotationSpeed;
+    if (this.rotation >= 360) {
+        this.rotation -= 360;
+    }
+    else if (this.rotation < 0) {
+        this.rotation += 360;
+    }
+}
+```
+
+This is the least obvious from the bunch. Let's look at the code for `rotate`! This is fairly simple. The `direction` argument sets the direction of the rotation: if direction is 0 or greater, the tank rotates clockwise, otherwise anti-clockwise. If the tank "overrotates", we reset the rotation by a 360 degrees "turn" in the appropriate direction (so the value of the angle stays between 0 and 360).
+
+The movement is harder, but we have a formula for that. The role of `direction` is obvious: does the tank go forward or backward. Let's look at the lines with the *sine* and *cosine* functions! What you can see inside the brackets is simply a conversion from degrees to radians. `Math.sin(/*Switch to radians*/)`. With sine, you get the `x` coordinate of the unit vector starting from origo and rotated by `rotation` degrees. Unclear? Put another way: getting the sine of the angle gives you the 1 length step in `x` direction (as cosine does in `y` direction). If we want to use speed, we multiply by it. If we want to use direction, we can change the speed to negative for going backwards.
+
+If you want to understand why sine and cosine, you should try drawing what you have. However, it is a known formula, so don't overstress about it.
+
+## Scene
+We have the Tank, you let's use it in Scene! In ScenePlay (which is one type of Scene), we will store, move, draw the tank. However, first let's give some tools for this job to ScenePlay! Change the constructor of ScenePlay to look like the following:
+
+```javascript
+class ScenePlay extends Scene {
+
+    constructor(canvas, ctx, sprites) {
+        super();
+        this.canvas = canvas;
+        this.ctx = ctx;
+        this.sprites = sprites;
+
+        // Lots of magic numbers here! Need for a configuration file!
+        this.player = new Tank(10, 10, 15, 15, 0, 1, 3, "tank");
+    }
+}
+```
+
+We simply asked for a context, and created the tank with almost arbitrary values. Notice, that we received `sprites` from outside. Later, we will create a separate class for rendering, but for now, we are good.
+
+There are three functions, that we want to change: `handleInputCtx`, `update`, `render`. Let's go one by one:
+
+```javascript
+handleInputCtx(inputCtx) {
+    if (inputCtx.KeyW) {
+        this.player.move(1);
+    } else if (inputCtx.KeyS) {
+        this.player.move(-1);
+    }
+    if (inputCtx.KeyA) {
+        this.player.rotate(-1);
+    } else if (inputCtx.KeyD) {
+        this.player.rotate(1);
+    }
+}
+```
+
+`handleInputCtx` is fairly obvious. We are just calling the methods of the tank. `update` is even more obvious, since we literally don't do anything yet (remove the *console.log* part)!
+
+```javascript
+update() { }
+```
+
+`render` is where we do the ugly stuff:
+
+```javascript
+render() {
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    const tankCenter = {
+        x: this.player.x + this.player.w / 2,
+        y: this.player.y + this.player.h / 2
+    }
+    this.ctx.save();
+    this.ctx.translate(tankCenter.x, tankCenter.y);
+    this.ctx.rotate(this.player.rotation * Math.PI / 180);
+    this.ctx.translate(-tankCenter.x, -tankCenter.y);
+    this.ctx.drawImage(
+        this.sprites[this.player.spriteName],
+        this.player.x,
+        this.player.y,
+        this.player.w,
+        this.player.h
+    );
+    this.ctx.restore();
+}
+```

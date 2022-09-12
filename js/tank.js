@@ -21,7 +21,7 @@ class Tank {
         if (this.rotation >= 360) {
             this.rotation -= 360;
         }
-        if (this.rotation < 0) {
+        else if (this.rotation < 0) {
             this.rotation += 360;
         }
     }
