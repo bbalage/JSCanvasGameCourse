@@ -226,7 +226,14 @@ handleInputCtx(inputCtx) {
 }
 ```
 
-`handleInputCtx` is fairly obvious. We are just calling the methods of the tank. `update` is even more obvious, since we literally don't do anything yet (remove the *console.log* part)!
+In `handleInputCtx` the `inputCtx` argument needs a bit of explanation. When we look at our structure,
+we can ask the question: where should the user interaction logic go? We want to know whether a given
+key is pushed down or not. How we retrieve this information doesn't interest us in any implementation
+of Scene. So we change our interface a little, and we take an object called `inputCtx`. This object
+holds data about the state of the keyboard: `inputCtx.someKey` is true if `someKey` is currently pressed.
+
+The rest is nothing special: we are just calling the methods of the tank. `update` is even more obvious,
+since we literally don't do anything yet (remove the *console.log* part!).
 
 ```javascript
 update() { }
@@ -255,3 +262,97 @@ render() {
     this.ctx.restore();
 }
 ```
+
+Most of this comes down to computer geometry reasons; rotation is not as obvious from a technical viewpoint
+as it might seem. Let's go through this line by line! I will suggest some changes for you to make along 
+the line, but please, return to this place once we have written `Game`.
+- `clearRect` should not sound new. We simply delete everything from the canvas before we start drawing.
+- `tankCenter` is also obvious. We calculate the center of the tank, because we are going to rotate it
+around its center. I suggest you to set this to something else, anything that's not the Tank's center.
+You might find the results interesting (though the player won't be happy about it).
+- `ctx.save()` is handy, because when we rotate an object, we actually rotate the world around it.
+It's like if the painter moved the canvas and not the brush when he/she wanted to paint from a different
+angle. Since you are going to change the context of the html canvas, you first save it, so you can return
+to it later.
+- `ctx.translate(tankCenter.x, tankCenter.y)` moves the context so the center of the Tank becomes the 
+center of the world (0, 0). Again, if you don't do this, you can check out what happens (simply remove the 
+two lines where we translate the context). The Tank still gets rotated, but not around its center. It 
+will be like if it were orbiting the sun, but the sun is origo of the coordinate system.
+- `ctx.rotate` does the rotation. We have to supply the Tank's rotation in radians.
+- `ctx.translate(-tankCenter.x, -tankCenter.y)` translates the coordinate system back to its original 
+position before drawing. If we haven't done this, the Tank would always be drawn in the center of the 
+coordinate system.
+- `ctx.drawImage` has one change that might strike you strange: `this.sprites[this.player.spriteName]`.Remember the constructor! We supplied all images to ScenePlay, so we just have to access them by name.
+This is exactly what happens here.
+- `ctx.restore()` is the pair of `save`: we change the context back to the way it was when we last saved.
+Check out what happens if we don't do this (remove or comment this line)! Rotation should go crazyyy!
+
+That's almost it, folks! Let's see the last piece: Game.
+
+## Game
+Here, I'm going to just hit you with it; paste this to `game.js`:
+
+```javascript
+class Game {
+
+    constructor() {
+        const canvas = document.getElementById("c");
+        const ctx = canvas.getContext("2d");
+
+        const sprites = {
+            "tank": new Image()
+        }
+        sprites["tank"].src = "img/tank.png";
+
+        this.scene = new ScenePlay(canvas, ctx, sprites);
+        this.inputCtx = {
+            KeyW: false,
+            KeyS: false,
+            KeyA: false,
+            KeyD: false,
+        };
+        document.addEventListener("keydown", (e) => this.keyDownHandler(e), false);
+        document.addEventListener("keyup", (e) => this.keyUpHandler(e), false);
+    }
+
+    gameLoop() {
+        this.scene.handleInputCtx(this.inputCtx);
+        this.scene.update();
+        this.scene.render();
+        if (this.scene.shouldQuit()) {
+            console.log("Here we should handle switching scenes.");
+        }
+        requestAnimationFrame(() => this.gameLoop());
+    }
+
+    keyDownHandler(e) {
+        this.inputCtx[e.code] = true;
+    }
+
+    keyUpHandler(e) {
+        this.inputCtx[e.code] = false;
+    }
+}
+```
+
+The constructor initializes everything, while gameLoop does what we planned at the beginning: calls
+the appropriate Scene with the required context. The previously discussed `inputCtx` is a member of 
+Game. The event listeners are also member functions, and all they do is set the state of `inputCtx`
+appropriately. We also create the Image objects in the constructor.
+
+## Tasks
+
+These tasks are not optional; in the next lesson, I will assume they are done. You can look up their
+solution in the source files (the git branch `lesson2` will point to the right state of the code).
+I suggest you try to do them yourself, then adjust your code to the one I wrote (you might get into
+less trouble later if you don't diverge too much).
+
+### **Task 1:** (medium)
+
+Measure FPS, and print it to the screen! It will be a useful number to look as we add more and more 
+computation intensive tasks.
+
+### **Task 2:** (easy)
+
+Change the Tank (and `ScenePlay`), so the rotation will be stored in radian. The constructor of Tank
+should still take it in degrees. Did the FPS change?
