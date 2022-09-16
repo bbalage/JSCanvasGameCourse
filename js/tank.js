@@ -4,16 +4,16 @@ class Tank {
         this.y = y;
         this.w = w;
         this.h = h;
-        this.rotation = rotation;
+        this.rotation = rotation * Math.PI / 180;
         this.speed = speed;
-        this.rotationSpeed = rotationSpeed;
+        this.rotationSpeed = rotationSpeed * Math.PI / 180;
         this.spriteName = spriteName;
     }
 
     move(direction) {
         const dir = direction <= 0 ? -1 : 1;
-        this.x += Math.sin(this.rotation * Math.PI / 180) * this.speed * dir;
-        this.y -= Math.cos(this.rotation * Math.PI / 180) * this.speed * dir;
+        this.x += Math.sin(this.rotation) * this.speed * dir;
+        this.y -= Math.cos(this.rotation) * this.speed * dir;
     }
 
     rotate(direction) {

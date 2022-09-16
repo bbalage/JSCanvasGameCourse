@@ -355,4 +355,4 @@ computation intensive tasks.
 ### **Task 2:** (easy)
 
 Change the Tank (and `ScenePlay`), so the rotation will be stored in radian. The constructor of Tank
-should still take it in degrees. Did the FPS change?
+should still take it in degrees.

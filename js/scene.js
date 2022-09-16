@@ -43,7 +43,7 @@ class ScenePlay extends Scene {
         }
         this.ctx.save();
         this.ctx.translate(tankCenter.x, tankCenter.y);
-        this.ctx.rotate(this.player.rotation * Math.PI / 180);
+        this.ctx.rotate(this.player.rotation);
         this.ctx.translate(-tankCenter.x, -tankCenter.y);
         this.ctx.drawImage(
             this.sprites[this.player.spriteName],
