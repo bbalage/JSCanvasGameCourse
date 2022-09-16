@@ -1,18 +1,18 @@
 # Lesson 2
-In this lesson, we are going to do a big refactoring! We can't just put all of our content in one file,
-one class, can we? Well, we could, but it depends... If we want too many things, then putting it all
-to one file is not a very good idea, at least not while we are developing. So, let's make a few plans
-on what we want!
+In this lesson, we are going to do a big refactoring! We could put all of our content in just one file,
+but it would soon become a pain to scroll that single file all the time.
 
-What functionalities does a game usually have? What functionalities we want for our own? Where do we start?
+Before we go on, let's ask the question: What will our game do when it's ready as planned? What
+functionalities does a game usually have? What functionalities we want for our game? Where do we start?
 Well, let's see:
-- **Tank**: Yeah, we already know we are making a tank game. Just rehearsing.
-- **Rotation**: Sure, our tank wants to turn. We need that.
+- **Tanks**: It's a tank game.
+- **Rotation**: Our tank wants to turn. We need that.
 - **Hit box / bounding box**: We are going to need that, if we want any of the following:
   - The tank stopping at an obstacle.
   - The tank shooting and damaging anyone/anything else with the bullet.
 - **Static objects**: obstacles, covers. Just to make the playground more interesting.
 - **Shooting and damaging**: These two come hand in hand I'm afraid.
+- **Camera:** What if our playground doesn't fit on the screen? Then we need a camera that follows the tank.
 - **Main menu**: This is just sugar on the cake, but let's go for it!
 - **Enemies**: This could get arbitrarily hard, but our game isn't much without them. 
 
@@ -26,7 +26,7 @@ First, let's just think about what we said about our goals! Our game will have:
 - a menu,
 - the game itself.
 
-It is also common to have a pause menu, but we don't go there (you can add it yourself, it's not that hard). 
+It is also common to have a pause menu, but we don't go there (you can add it yourself). 
 
 If you look up any game programming learning material, you will probably come across the concept of the
 game loop. The game loop runs as long as the game does, so from our perspective, forever (because we can
@@ -39,8 +39,9 @@ on the canvas, and don't use HTML buttons and such for menu purposes).
 
 So, to represent these requirements, I created two classes: Game and Scene. There is only one game, whose
 job is to switch between scenes. A Game stores a reference to the active scene, and calls the methods
-of scene, where the methods are: `handleInput`, `update`, `render`. Effectively, the Scene implements the
-game loop. The game switches scenes if necessary. The following UML diagram represents this idea.
+of the scene, where the methods are: `handleInput`, `update`, `render`. Effectively, the Scene implements
+the actions of the game loop. The game switches scenes if necessary. The following UML diagram represents
+this idea.
 
 ![UML](img/Game_and_scene.drawio.png)
 
@@ -49,7 +50,7 @@ to switch scenes. Of course, we somehow have to know which is the next scene to 
 there are only two scenes, we are fine like this.
 
 Let's write some dummy code! You can comment or delete all code from the previous lesson, because we
-are going to do some big refactoring.
+are, effectively going to wipe it off the board.
 
 First, create a `scene.js` file in the `js` folder, and paste the following content:
 
@@ -77,8 +78,8 @@ class ScenePlay extends Scene {
 
 For now, we are avoiding the implementation of a menu, because we have more important things to do.
 In Javascript, the inheritence is kind of not necessary, because there is no static checking as to what
-methods an object has. However, at least we state our intent quite clearly. The methods are only dummies
-for now.
+methods an object has. However, at least we state our intent quite clearly: ScenePlay is a Scene, and 
+Game will rely on the Scene interface. The methods are only dummies for now.
 
 Let's create a file, named `game.js` in the `js` folder. Paste the following content:
 
@@ -159,9 +160,9 @@ Obviously, this just sets everything up. Functions come later. Some of the const
 - x, y: the initial position of the tank.
 - w, h: width and height of the tank.
 - rotation: rotation in degrees.
-- speed: how far does one step change the tank's position.
+- speed: how much does one step change the tank's position.
 - rotationSpeed: how many degrees does one turn movement rotate the tank.
-- spriteName: least obvious... we don't store the image with the tank, because multiple tanks could have the same image; this is why we store only the name of the image, and the image is elsewhere in associative table, accessible by name.
+- spriteName: least obvious... we don't store the image with the tank, because multiple tanks could have the same image; this is why we store only the name of the image, and put the image elsewhere in an associative table, accessible by name.
 
 There are two other things the tank needs to be able to do (currently): move and rotate. Both get a function inside the class. Paste the following:
 
@@ -201,7 +202,7 @@ class ScenePlay extends Scene {
         this.ctx = ctx;
         this.sprites = sprites;
 
-        // Lots of magic numbers here! Need for a configuration file!
+        // Lots of magic numbers here! Need for a configuration file?
         this.player = new Tank(10, 10, 15, 15, 0, 1, 3, "tank");
     }
 }

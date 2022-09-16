@@ -18,11 +18,11 @@ class Tank {
 
     rotate(direction) {
         this.rotation += direction >= 0 ? this.rotationSpeed : -this.rotationSpeed;
-        if (this.rotation >= 360) {
-            this.rotation -= 360;
+        if (this.rotation >= Math.PI * 2) {
+            this.rotation -= Math.PI * 2;
         }
         else if (this.rotation < 0) {
-            this.rotation += 360;
+            this.rotation += Math.PI * 2;
         }
     }
 }
